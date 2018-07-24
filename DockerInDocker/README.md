@@ -120,6 +120,33 @@ docker save tensor-cloud-dind-mariadb-mediawiki | gzip > your_saved_tensor-cloud
 ```
 
 ## 1.0 Dind volumerize backup
+### SETUP Volumerize
+if Mediawiki:
+
+```
+docker run -d \
+    --name volumerize_backup \
+    -v $PWD/mediawiki_data:/source/application_data_mediawiki:ro \
+    -v $PWD/mariadb_data:/source/application_database_data_mariadb:ro \
+    -v $PWD/backup_volume:/backup \
+    -v cache_volume:/volumerize-cache \
+    -e "VOLUMERIZE_SOURCE=/source" \
+    -e "VOLUMERIZE_TARGET=file:///backup" \
+    blacklabelops/volumerize
+```
+if WordPress:
+```
+docker run -d \
+    --name volumerize_backup \
+    -v $PWD/wordpress_data:/source/application_data_wordpress:ro \
+    -v $PWD/mariadb_data:/source/application_database_data_mariadb:ro \
+    -v $PWD/backup_volume:/backup \
+    -v cache_volume:/volumerize-cache \
+    -e "VOLUMERIZE_SOURCE=/source" \
+    -e "VOLUMERIZE_TARGET=file:///backup" \
+    blacklabelops/volumerize
+```
+if Piwik:
 ```
 docker run -d \
     --name volumerize_backup \
@@ -131,6 +158,7 @@ docker run -d \
     -e "VOLUMERIZE_TARGET=file:///backup" \
     blacklabelops/volumerize
 ```
+### Backup
 
 ```
 docker exec volumerize_backup backup
@@ -143,6 +171,7 @@ Finally, copy out of Dind container.
 
 ## 2.0 Dind volumerize restore
 
+### Prepare Data For Restoration
 Copy to inside of Dind container,
 
 ```
@@ -159,11 +188,13 @@ Stop existed piwik docker service,
 docker stop $(docker ps -aq)
 ```
 
-Run up the volumerize_restore docker service,
+
+### Setup Volumerize for Restoration
+if Mediawiki:
 ```
   docker run -d \
    --name volumerize_restore \
-   -v $PWD/piwik_data:/source/application_data_mediawiki \
+   -v $PWD/mediawiki_data:/source/application_data_mediawiki \
    -v $PWD/mariadb_data:/source/application_database_data_mariadb \
    -v $PWD/backup_volume:/backup:ro \
    -v cache_volume:/volumerize-cache \
@@ -171,7 +202,31 @@ Run up the volumerize_restore docker service,
    -e "VOLUMERIZE_TARGET=file:///backup" \
    blacklabelops/volumerize   
 ```
-
+if WordPress:
+```
+  docker run -d \
+   --name volumerize_restore \
+   -v $PWD/wordpress_data:/source/application_data_wordpress \
+   -v $PWD/mariadb_data:/source/application_database_data_mariadb \
+   -v $PWD/backup_volume:/backup:ro \
+   -v cache_volume:/volumerize-cache \
+   -e "VOLUMERIZE_SOURCE=/source" \
+   -e "VOLUMERIZE_TARGET=file:///backup" \
+   blacklabelops/volumerize   
+```
+if Piwik:
+```
+  docker run -d \
+   --name volumerize_restore \
+   -v $PWD/piwik_data:/source/application_data_piwik \
+   -v $PWD/mariadb_data:/source/application_database_data_mariadb \
+   -v $PWD/backup_volume:/backup:ro \
+   -v cache_volume:/volumerize-cache \
+   -e "VOLUMERIZE_SOURCE=/source" \
+   -e "VOLUMERIZE_TARGET=file:///backup" \
+   blacklabelops/volumerize   
+```
+### Restore Data
 Execute restore task,
 
 ```
