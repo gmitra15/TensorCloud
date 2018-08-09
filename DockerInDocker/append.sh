@@ -1,3 +1,5 @@
+#!/bin/bash
+
 echo 'Installing...'
 cd /opt/bitnami/mediawiki
 
