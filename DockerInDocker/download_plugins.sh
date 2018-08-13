@@ -27,8 +27,11 @@ cd ..
 
 echo 'Downloading MediaWiki Extension (2/3): OAuth2 Client'
 git clone https://github.com/Schine/MW-OAuth2Client.git
-unzip master.zip
+
 cd MW-OAuth2Client
+git submodule update --init
+
+cd vendors/oauth2-client
 composer install
 
 mv SpecialOAuth2Client.php SpecialOAuth2Client_old.php
